@@ -20,20 +20,18 @@ contract NFTClone is ERC721Enumerable, Ownable {
     constructor() ERC721("NFTClone", "NCLN") {}
 
     function mint(address _contract, uint256 _tokenId) public payable {
-        // require(bytes(_userText).length <= 30, "String input exceeds limit.");
-        uint256 supply = totalSupply();
-
-        NFT memory newNFT = NFT(
-            _contract,
-            _tokenId
-        );
+        uint256 newSupply = totalSupply() + 1;
 
         if (msg.sender != owner()) {
             require(msg.value >= 0.005 ether, "Requires 0.005 eth payment");
         }
 
-        tokenIdToNFT[supply + 1] = newNFT;
-        _safeMint(msg.sender, supply + 1);
+        tokenIdToNFT[newSupply] = NFT(
+            _contract,
+            _tokenId
+        );
+
+        _safeMint(msg.sender, newSupply);
     }
 
     function tokenURI(uint256 _tokenId)
@@ -48,8 +46,7 @@ contract NFTClone is ERC721Enumerable, Ownable {
             "ERC721Metadata: URI query for nonexistent token"
         );
 
-        NFT memory currentNFT = tokenIdToNFT[_tokenId];
-        return ERC721(currentNFT.destContract).tokenURI(_tokenId);
+        return ERC721(tokenIdToNFT[_tokenId].destContract).tokenURI(_tokenId);
     }
 
     //only owner
