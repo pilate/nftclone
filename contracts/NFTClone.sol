@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-// import "./Base64.sol";
-
 
 contract NFTClone is ERC721Enumerable, Ownable {
     using Strings for uint256;
@@ -62,21 +60,3 @@ contract NFTClone is ERC721Enumerable, Ownable {
         require(success);
     }
 }
-
-
-/* 
-
-// cost originally: 
-> gas used:            4264042 (0x41106a)
-> total cost:          0.08528084 ETH
-
-// now:
-> gas used:            3969029 (0x3c9005)
-> total cost:          0.07938058 ETH
-
-// with optimization
-> gas used:            2576635 (0x2750fb)
-> total cost:          0.0515327 ETH
-
-
-*/
