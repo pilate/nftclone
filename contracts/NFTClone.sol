@@ -18,9 +18,10 @@ contract NFTClone is ERC721Enumerable, Ownable {
         uint256 tokenId;
     }
 
+    // solhint-disable-next-line
     constructor() ERC721("NFTClone", "NCLN") {}
 
-    function mint(address _contract, uint256 _tokenId) public payable {
+    function mint(address _contract, uint256 _tokenId, address _destination) public payable {
         if (msg.sender != owner()) {
             require(msg.value >= fee, string(abi.encodePacked("Missing fee of ", fee.toString(), " wei")));
         }
@@ -35,7 +36,11 @@ contract NFTClone is ERC721Enumerable, Ownable {
             _contract,
             _tokenId
         );
-        _safeMint(msg.sender, newSupply);
+        _safeMint(_destination, newSupply);
+    }
+    
+    function mint(address _contract, uint256 _tokenId) public payable {
+        mint(_contract, _tokenId, msg.sender);
     }
 
     function tokenURI(uint256 _tokenId)
@@ -61,7 +66,6 @@ contract NFTClone is ERC721Enumerable, Ownable {
         fee = _newFee;
     }
 
-    //only owner
     function withdraw() public payable onlyOwner {
         (bool success, ) = payable(msg.sender).call{
             value: address(this).balance
