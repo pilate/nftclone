@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -10,27 +10,31 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFTClone is ERC721Enumerable, Ownable {
     using Strings for uint256;
 
-    mapping(uint256 => NFT) public tokenIdToNFT;
+    mapping(uint256 => NFT) private tokenIdToNFT;
+    uint private fee = 0.005 ether;
 
     struct NFT {
-        address destContract;
+        address contractAddr;
         uint256 tokenId;
     }
 
     constructor() ERC721("NFTClone", "NCLN") {}
 
     function mint(address _contract, uint256 _tokenId) public payable {
-        uint256 newSupply = totalSupply() + 1;
-
         if (msg.sender != owner()) {
-            require(msg.value >= 0.005 ether, "Requires 0.005 eth payment");
+            require(msg.value >= fee, string(abi.encodePacked("Missing fee of ", fee.toString(), " wei")));
         }
 
+        // call ownerOf(_tokenId) to validate token exists
+        (bool _success, ) = _contract.call(abi.encodeWithSelector(0x6352211e, _tokenId));
+        require(_success, "tokenId does not exist");
+
+        uint256 newSupply = totalSupply() + 1;
+        
         tokenIdToNFT[newSupply] = NFT(
             _contract,
             _tokenId
         );
-
         _safeMint(msg.sender, newSupply);
     }
 
@@ -46,7 +50,15 @@ contract NFTClone is ERC721Enumerable, Ownable {
             "ERC721Metadata: URI query for nonexistent token"
         );
 
-        return ERC721(tokenIdToNFT[_tokenId].destContract).tokenURI(_tokenId);
+        return ERC721(tokenIdToNFT[_tokenId].contractAddr).tokenURI(tokenIdToNFT[_tokenId].tokenId);
+    }
+
+    function getFee() public view returns (uint) {
+        return fee;
+    }
+
+    function setFee(uint _newFee) public onlyOwner {
+        fee = _newFee;
     }
 
     //only owner
